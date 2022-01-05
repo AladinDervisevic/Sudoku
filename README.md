@@ -1,2 +1,2 @@
 # Sudoku
-Domača naloga "Sudoku" iz predmeta Programiranje 1.
+Domača naloga "Sudoku solver" iz predmeta Programiranje 1.
