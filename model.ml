@@ -43,22 +43,36 @@ let print_grid string_of_cell grid =
 
 (* Funkcije za dostopanje do elementov mreže *)
 
-let get_row (grid : 'a grid) (row_ind : int) = failwith "TODO"
+let get_row (grid : 'a grid) (row_ind : int) = 
+  Array.init 9 (fun col_ind -> grid.(row_ind).(col_ind))
 
-let rows grid = failwith "TODO"
+let rows grid = List.init 9 (get_row grid)
 
 let get_column (grid : 'a grid) (col_ind : int) =
   Array.init 9 (fun row_ind -> grid.(row_ind).(col_ind))
 
 let columns grid = List.init 9 (get_column grid)
 
-let get_box (grid : 'a grid) (box_ind : int) = failwith "TODO"
+let get_box_ind row_ind col_ind =
+  (row_ind / 3) * 3 + (col_ind / 3)
 
-let boxes grid = failwith "TODO"
+let get_box (grid : 'a grid) (box_ind : int) : 'a grid =
+  let row = (box_ind / 3) * 3
+  and col = (box_ind mod 3) * 3 in
+  let box = Array.init 3 (
+    fun i -> Array.init 3 (
+      fun j -> grid.(row + i).(col + j)
+      )
+    )
+  in
+  box
+
+let boxes grid : 'a grid list = List.init 9 (get_box grid)
 
 (* Funkcije za ustvarjanje novih mrež *)
 
-let map_grid (f : 'a -> 'b) (grid : 'a grid) : 'b grid = failwith "TODO"
+let map_grid (f : 'a -> 'b) (grid : 'a grid) : 'b grid = 
+  Array.init 9 (fun i -> Array.map f grid.(i))
 
 let copy_grid (grid : 'a grid) : 'a grid = map_grid (fun x -> x) grid
 
@@ -97,7 +111,12 @@ let grid_of_string cell_of_char str =
 
 type problem = { initial_grid : int option grid }
 
-let print_problem problem : unit = failwith "TODO"
+let string_of_cell (cell : int option) = match cell with
+  | None -> " "
+  | Some number -> string_of_int number
+
+let print_problem problem : unit = 
+  print_grid string_of_cell problem.initial_grid
 
 let problem_of_string str =
   let cell_of_char = function
@@ -111,6 +130,42 @@ let problem_of_string str =
 
 type solution = int grid
 
-let print_solution solution = failwith "TODO"
+let print_solution solution = print_grid string_of_int solution
 
-let is_valid_solution problem solution = failwith "TODO"
+let rec valid_row (row : int array) : bool = 
+  let len = Array.length row in
+  if len <= 1 
+    then true
+  else
+    let prvi = row.(0)
+    and ostatek = Array.init (len - 1) (fun x -> row.(x + 1)) in
+    if Array.exists (fun x -> x = prvi) ostatek then false 
+    else valid_row ostatek
+
+let valid_box (box : int array array) : bool =
+  valid_row (Array.concat (Array.to_list box))
+
+(* preveri če izpolnjen sudoku ustreza pravilih igre *)
+(* valid_row deluje za vrstice in stolpce enako saj sta istega tipa *)
+let is_valid_grid (grid : solution) : bool = 
+  List.for_all valid_row (rows grid) && 
+  List.for_all valid_row (columns grid) && 
+  List.for_all valid_box (boxes grid)
+
+let compare_cells (c1 : int option) (c2 : int) : bool =
+  match c1 with
+  | None -> true
+  | Some x -> x = c2
+
+let is_applicable_solution (problem : problem) (solution : solution) : bool = 
+  let values = Array.init 9 (
+    fun i -> Array.init 9 (
+      fun j -> compare_cells problem.initial_grid.(i).(j) solution.(i).(j)
+      )
+    )
+  in
+  Array.for_all (fun array -> Array.for_all (fun y -> y = true) array) values
+
+let is_valid_solution (problem : problem) (solution : solution) = 
+  is_applicable_solution problem solution &&
+  is_valid_grid solution
