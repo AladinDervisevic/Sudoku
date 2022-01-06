@@ -4,17 +4,17 @@ type available = { loc : int * int; possible : int list }
 (* TODO: tip stanja ustrezno popravite, saj boste med reševanjem zaradi učinkovitosti
    želeli imeti še kakšno dodatno informacijo *)
 type state = { 
-  problem : problem; 
-  current_grid : int option grid;
+  problem : Model.problem; 
+  current_grid : int option Model.grid;
   empty_cells : available array;
   }
 
 let print_state (state : state) : unit =
-  print_grid
+  Model.print_grid
     (function None -> "?" | Some digit -> string_of_int digit)
     state.current_grid
 
-type response = Solved of solution | Unsolved of state | Fail of state
+type response = Solved of Model.solution | Unsolved of state | Fail of state
 
 let filter_integers (array : int option array) : int list =
   let rec aux acc list = match list with
@@ -26,11 +26,11 @@ let filter_integers (array : int option array) : int list =
   aux [] (Array.to_list array)
 
 let init_possibilities row_ind col_ind (grid : int option grid) : int list =
-  let row = filter_integers (get_row grid row_ind)
-  and column = filter_integers (get_column grid col_ind) in
-  let box_ind = get_box_ind row_ind col_ind in
+  let row = filter_integers (Model.get_row grid row_ind)
+  and column = filter_integers (Model.get_column grid col_ind) in
+  let box_ind = Model.get_box_ind row_ind col_ind in
   let unfiltered_box_as_array = 
-    Array.concat (Array.to_list (get_box grid box_ind)) 
+    Array.concat (Array.to_list (Model.get_box grid box_ind)) 
   in
   let filtered_box_as_list = filter_integers unfiltered_box_as_array in
   let rec aux acc digit =
@@ -46,7 +46,7 @@ let init_possibilities row_ind col_ind (grid : int option grid) : int list =
   in
   aux [] 1
 
-let initialize_empty_cells (grid : int option grid) : available array =
+let initialize_empty_cells (grid : int option Model.grid) : available array =
   let rec cells_aux acc i j : available list =
     if i <= 8 then 
       let new_j = if j = 8 then 0 else j + 1 in
@@ -63,9 +63,9 @@ let initialize_empty_cells (grid : int option grid) : available array =
   in
   Array.of_list (cells_aux [] 0 0)
 
-let initialize_state (problem : problem) : state = { 
+let initialize_state (problem : Model.problem) : state = { 
   problem = problem;
-  current_grid = copy_grid problem.initial_grid;
+  current_grid = Model.copy_grid problem.initial_grid;
   empty_cells = initialize_empty_cells problem.initial_grid;
 }
 
@@ -76,8 +76,8 @@ let validate_state (state : state) : response =
   if unsolved then Unsolved state
   else
     (* Option.get ne bo sprožil izjeme, ker so vse vrednosti v mreži oblike Some x *)
-    let solution = map_grid Option.get state.current_grid in
-    if is_valid_solution state.problem solution then Solved solution
+    let solution = Model.map_grid Option.get state.current_grid in
+    if Model.is_valid_solution state.problem solution then Solved solution
     else Fail state
 
 let update_empty_cells cells used_cell digit = 
@@ -97,8 +97,8 @@ let update_empty_cells cells used_cell digit =
   in
   Array.of_list (aux [] (Array.to_list cells))
 
-let updated_grid (grid : int option grid) loc digit : int option grid = 
-  let new_grid = copy_grid grid in
+let updated_grid (grid : 'a Model.grid) loc digit : 'a Model.grid = 
+  let new_grid = Model.copy_grid grid in
   let (i, j) = loc in
   new_grid.(i).(j) <- (Some digit);
   new_grid
@@ -136,7 +136,7 @@ let rec different_digits =
     else
       different_digits xs
 
-let check_grid (grid : int option grid) : bool =
+let check_grid (grid : int option Model.grid) : bool =
   let rec valid_rows = function
     | [] -> true
     | row :: xs ->
@@ -151,9 +151,9 @@ let check_grid (grid : int option grid) : bool =
       boxes_aux ((Array.concat (Array.to_list box)) :: acc) xs
   in
   let boolean = (
-    valid_rows (rows grid) && 
-    valid_rows (columns grid) &&
-    valid_rows (boxes_aux [] (boxes grid))
+    valid_rows (Model.rows grid) && 
+    valid_rows (Model.columns grid) &&
+    valid_rows (boxes_aux [] (Model.boxes grid))
   )
   in
   boolean
@@ -206,7 +206,6 @@ let clean_state state : state =
     empty_cells = Array.of_list (aux [] (Array.to_list state.empty_cells))
   }
 
-
 (* pogledamo, če trenutno stanje vodi do rešitve *)
 let rec solve_state (state : state) =
   (* uveljavimo trenutne omejitve in pogledamo, kam smo prišli *)
@@ -239,5 +238,5 @@ and explore_state (state : state) =
           (* če prva možnost ne vodi do rešitve, raziščemo še drugo možnost *)
           solve_state st2
 
-let solve_problem (problem : problem) =
+let solve_problem (problem : Model.problem) =
   problem |> initialize_state |> solve_state
