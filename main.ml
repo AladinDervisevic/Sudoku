@@ -60,4 +60,4 @@ let () =
   |> find_and_display_solution *)
 
 
-  (*  D:\\OCaml64\\usr\\local\\bin\\ocaml-env.exe exec -- D:\OCaml64\home\ACER\.opam\4.12.0+mingw64c\bin\ocamlc.exe .\model.ml .\solver.ml .\main.ml
+  (*  D:\\OCaml64\\usr\\local\\bin\\ocaml-env.exe exec -- D:\OCaml64\home\ACER\.opam\4.12.0+mingw64c\bin\ocamlc.exe .\model.ml .\solver.ml .\main.ml *)
