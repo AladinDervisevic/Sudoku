@@ -25,7 +25,7 @@ let filter_integers (array : int option array) : int list =
   in
   aux [] (Array.to_list array)
 
-let init_possibilities row_ind col_ind (grid : int option grid) : int list =
+let init_possibilities row_ind col_ind (grid : int option Model.grid) : int list =
   let row = filter_integers (Model.get_row grid row_ind)
   and column = filter_integers (Model.get_column grid col_ind) in
   let box_ind = Model.get_box_ind row_ind col_ind in
