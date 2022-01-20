@@ -1,8 +1,6 @@
 
 type available = { loc : int * int; possible : int list }
 
-(* TODO: tip stanja ustrezno popravite, saj boste med reševanjem zaradi učinkovitosti
-   želeli imeti še kakšno dodatno informacijo *)
 type state = { 
   problem : Model.problem; 
   current_grid : int option Model.grid;
@@ -131,10 +129,7 @@ let rec different_digits =
   function
   | [] -> true
   | x::xs ->
-    if List.exists (fun i -> i = x) xs then
-      false
-    else
-      different_digits xs
+    List.for_all (fun i -> i != x) xs && different_digits xs
 
 let check_grid (grid : int option Model.grid) : bool =
   let rec valid_rows = function
@@ -159,12 +154,6 @@ let check_grid (grid : int option Model.grid) : bool =
   boolean
 
 let branch_state (state : state) : (state * state) option =
-  (* TODO: Pripravite funkcijo, ki v trenutnem stanju poišče hipotezo, glede katere
-     se je treba odločiti. Če ta obstaja, stanje razveji na dve stanji:
-     v prvem predpostavi, da hipoteza velja, v drugem pa ravno obratno.
-     Če bo vaš algoritem najprej poizkusil prvo možnost, vam morda pri drugi
-     za začetek ni treba zapravljati preveč časa, saj ne bo nujno prišla v poštev. *)
-  
   if check_grid state.current_grid then
     let empty_cell = cell_with_least_possibilities state in
     match empty_cell with
@@ -208,10 +197,7 @@ let clean_state state : state =
 
 (* pogledamo, če trenutno stanje vodi do rešitve *)
 let rec solve_state (state : state) =
-  (* uveljavimo trenutne omejitve in pogledamo, kam smo prišli *)
-  (* TODO: na tej točki je stanje smiselno počistiti in zožiti možne rešitve *)
-  let cleaned_state = clean_state state in
-  match validate_state cleaned_state with
+  match validate_state (clean_state state) with
   | Solved solution ->
       (* če smo našli rešitev, končamo *)
       Some solution
