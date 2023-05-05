@@ -1,2 +1,2 @@
 # Sudoku
-Domača naloga "Sudoku solver" iz predmeta Programiranje 1.
+Program, ki pri vhodni začetni sudoku mreži, vrne pravilno rešeno in izpoljneno mrežo.
